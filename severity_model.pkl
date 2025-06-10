@@ -1,0 +1,8 @@
+import joblib
+
+# Save a model
+joblib.dump(model, 'severity_predictor.pkl')
+
+# Save other components
+joblib.dump(label_encoder, 'label_encoder.pkl')
+joblib.dump(vectorizer, 'vectorizer.pkl')

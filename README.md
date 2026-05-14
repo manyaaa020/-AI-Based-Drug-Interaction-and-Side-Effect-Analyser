@@ -1,133 +1,170 @@
-# 💊 Drug-to-Drug Interaction Severity Predictor
+# AI-Based Drug Interaction & Side Effect Analyser
 
-> End-to-end ML pipeline for predicting drug interaction severity — built on a **self-constructed dataset** created through institutional collaboration and domain expert annotation.
+> End-to-end ML pipeline for predicting drug-drug interaction (DDI) severity — built on a **self-constructed, expert-annotated dataset** created through institutional collaboration with medical students and clinical interns.
 
 **Patent Published:** Indian Patent Office Journal, Issue 1/2026 | App. No. 202521119855
 
 ---
 
-## 🧩 The Problem — And Why the Dataset Didn't Exist
+## The Problem — And Why the Dataset Had to Be Built From Scratch
 
-Drug-to-drug interactions (DDIs) are a leading cause of adverse clinical events. While interaction *existence* databases exist (e.g., DrugBank), **publicly available datasets labelled by interaction severity** (mild / moderate / severe) did not exist in a form suitable for ML classification.
+Drug-to-drug interactions (DDIs) are a leading cause of adverse clinical events globally. While databases documenting interaction *existence* are available (e.g., DrugBank), **no publicly available dataset existed with structured severity labels** (mild / moderate / severe) suitable for ML classification at the time of this project.
 
-Standard open datasets either:
+Standard open resources either:
 - Lacked severity labels entirely
 - Were too small for reliable model training
-- Were restricted to proprietary clinical systems
+- Were locked behind proprietary clinical systems
 
 ---
 
-## 📦 Dataset Construction — The Real Work
+## Dataset Construction — The Core Research Contribution
 
-Building this dataset was the core research contribution of this project.
+Building this dataset was the primary research challenge of the project. Two datasets are included in this repository:
 
-### Step 1 — Formal Data Requests
-- Submitted a formal data access request to **DrugBank** for structured interaction records
-- Supplemented with interaction data from additional pharmacological databases and published literature sources
-- Combined and deduplicated entries across sources into a unified schema
+| File | Description |
+|---|---|
+| `db_drug_interactions.csv` | Raw interaction records sourced from DrugBank and supplementary pharmacological databases |
+| `DDI_Severity_Labeled.csv` | Final cleaned, annotated dataset with severity labels — ready for ML |
 
-### Step 2 — Medical Expert Collaboration
-Recognising that automated sources alone were insufficient for severity annotation, we established a collaboration with:
-- **SMCW (Shri Madhav College of Pharmacy / Medical students)** — contributed drug interaction knowledge from medical textbooks and clinical references
-- **SUHRC Clinical Interns** — validated and annotated interaction severity levels based on clinical guidelines and pharmacovigilance standards
+### How It Was Built
 
-This human-in-the-loop annotation process ensured domain validity that purely automated pipelines cannot achieve.
+**Step 1 — Formal Data Requests**
+- Submitted a formal access request to **DrugBank** for structured drug interaction records
+- Supplemented with data from additional pharmacological literature and open drug databases
+- Merged and deduplicated entries across sources into a unified schema
 
-### Step 3 — Dataset Assembly
+**Step 2 — Medical Expert Annotation (Human-in-the-Loop)**
+
+Automated sources alone were insufficient for severity labelling. We collaborated with:
+- **SMCW medical students** — contributed interaction knowledge from medical textbooks and clinical references
+- **SUHRC clinical interns** — validated and annotated severity levels (mild / moderate / severe) based on pharmacovigilance standards and clinical guidelines
+
+This human-in-the-loop process ensured domain validity that purely automated pipelines cannot replicate.
+
+**Step 3 — Cleaning & Validation**
+- Removed duplicates and inconsistently labelled entries
+- Balanced class representation across severity levels
 - Final dataset: **500+ drug entries** with interaction pairs and severity labels
-- Features: drug class, mechanism of action, interaction type, affected organ system, severity label
-- Cleaned, deduplicated, and validated for class balance and annotation consistency
 
-> 📢 **This dataset is being prepared for public release** — a contribution to the open pharmacological research community.
+> This dataset is being prepared for **public release** as a contribution to the open pharmacological research community.
 
 ---
 
-## 🔬 ML Pipeline
-
-### Preprocessing
-- NLP-based drug name standardisation (handling brand names, generics, abbreviations)
-- Feature engineering: drug class encoding, interaction mechanism categories
-- EDA: class distribution analysis, interaction frequency plots, missing value audit
-
-### Models Trained & Evaluated
-
-| Model | Validation Accuracy | Notes |
-|---|---|---|
-| Multinomial Naive Bayes | ~89% | Fast baseline, good for text features |
-| Random Forest | ~94% | Best overall — selected for deployment |
-| Logistic Regression | ~87% | Interpretable, good precision |
-
-- 5-fold cross-validation for all models
-- Confusion matrix, classification report, and ROC-AUC evaluated per class
-
-### Key Features by Importance
-1. Drug class combination
-2. Mechanism of interaction
-3. Affected physiological system
-4. Dosage sensitivity flag
-
----
-
-## 🖥️ Deployment
-
-- **Streamlit Dashboard** — interactive risk visualisation, input any two drugs and get severity prediction with explanation
-- **FastAPI endpoint** — `/predict` POST endpoint serving the trained Random Forest model
-- **Full experiment documentation** — all preprocessing steps, model runs, and findings recorded
-
----
-
-## 🛠️ Tech Stack
+## Project Structure
 
 ```
-Python, Pandas, NumPy
-Scikit-learn (Random Forest, Naive Bayes, Logistic Regression)
-NLTK / spaCy (NLP preprocessing)
-Matplotlib, Seaborn
-Streamlit, FastAPI
-Jupyter Notebook
-```
-
----
-
-## 📋 Project Structure
-
-```
-drug-interaction-predictor/
+AI-Based-Drug-Interaction-and-Side-Effect-Analyser/
 │
-├── data/
-│   ├── raw/                  ← Source data (DrugBank + supplementary)
-│   ├── annotated/            ← Expert-annotated severity labels
-│   └── final_dataset.csv     ← Cleaned, unified dataset
+├── DDI_Severity_Labeled.csv      ← Final annotated dataset (custom-built)
+├── db_drug_interactions.csv      ← Raw DrugBank source data
 │
-├── notebooks/
-│   ├── 01_EDA.ipynb
-│   ├── 02_Preprocessing.ipynb
-│   └── 03_Modelling.ipynb
+├── ml_predictor.py               ← ML training & evaluation pipeline
+├── interaction_checker.py        ← Core interaction lookup & severity logic
+├── chatbot_engine.py             ← Conversational query interface
+├── main_app.py                   ← Streamlit dashboard (entry point)
+├── utils.py                      ← Shared helper functions
+├── _init_.py
 │
-├── app/
-│   ├── streamlit_app.py
-│   └── api.py (FastAPI)
-│
-├── models/
-│   └── rf_model.pkl
-│
+├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## 🏆 Outcomes
+## ML Pipeline (`ml_predictor.py`)
 
-- **Patent Published** — Indian Patent Office Journal (Issue 1/2026, App. No. 202521119855)
-- Dataset annotation methodology validated by clinical interns
-- Model pipeline achieving ~94% validation accuracy on held-out test set
-- Dashboard deployed for interactive clinical exploration
+### Preprocessing
+- NLP-based drug name standardisation — handles brand names, generics, abbreviations
+- Feature encoding: drug class, interaction mechanism, affected organ system
+- EDA: class distribution, interaction frequency, missing value audit
+
+### Models Trained & Evaluated
+
+| Model | Validation Accuracy | Notes |
+|---|---|---|
+| Multinomial Naive Bayes | ~89% | Fast baseline, strong on text features |
+| Random Forest | ~94% | Best overall — selected for deployment |
+| Logistic Regression | ~87% | Interpretable, strong precision |
+
+- 5-fold stratified cross-validation on all models
+- Confusion matrix, classification report, and ROC-AUC per class
+- Feature importance analysis — drug class combination and interaction mechanism are top predictors
 
 ---
 
-## 👩‍💻 Authors
+## Application (`main_app.py`)
 
-**Manya Sourabh Bhargava** — B.Tech AI/ML, Symbiosis Institute of Technology, Pune  
-In collaboration with SMCW medical students and SUHRC clinical interns.
+Built with **Streamlit** — run locally with one command:
 
-[GitHub](https://github.com/manyaaa020) | [LinkedIn](https://linkedin.com/in/manya-bhargava) | [Patent](https://ipindia.gov.in)
+```bash
+streamlit run main_app.py
+```
+
+**Features:**
+- Input any two drug names → get predicted severity (mild / moderate / severe)
+- Confidence score per prediction
+- Interaction mechanism explanation
+- Chatbot interface via `chatbot_engine.py` for natural language queries
+
+---
+
+## Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/manyaaa020/-AI-Based-Drug-Interaction-and-Side-Effect-Analyser
+cd -AI-Based-Drug-Interaction-and-Side-Effect-Analyser
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the app
+streamlit run main_app.py
+```
+
+---
+
+## requirements.txt
+
+```
+pandas==2.1.0
+numpy==1.25.0
+scikit-learn==1.3.0
+nltk==3.8.1
+streamlit==1.28.0
+matplotlib==3.7.2
+seaborn==0.12.2
+joblib==1.3.2
+```
+
+---
+
+## Key Results
+
+| Metric | Value |
+|---|---|
+| Best Model | Random Forest |
+| Validation Accuracy | ~94% |
+| Patent Status | Published — IPO Journal Issue 1/2026 |
+| Dataset Size | 500+ drug interaction pairs |
+| Severity Classes | Mild / Moderate / Severe |
+
+---
+
+## Outcomes
+
+- **Patent Published** — Indian Patent Office Journal (Issue 1/2026, App. No. 202521119855)
+- Custom dataset annotated by medical domain experts
+- Interactive Streamlit app for clinical exploration
+- All experiments, methodology, and dataset construction fully documented
+
+---
+
+## Authors
+
+**Manya Sourabh Bhargava, Aakash Sharma ,Khushi Kashyap**
+
+In collaboration with **SMCW medical students** and **SUHRC clinical interns** for dataset annotation and domain validation.
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Manya_Bhargava-0A66C2?style=flat&logo=linkedin)](https://linkedin.com/in/manya-bhargava)
+[![GitHub](https://img.shields.io/badge/GitHub-manyaaa020-181717?style=flat&logo=github)](https://github.com/manyaaa020)
